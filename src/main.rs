@@ -80,12 +80,17 @@ fn list_backends() {
 pub fn get_credentials<F: FnOnce(&String) -> Option<String>>(
     username: Option<String>,
     password: Option<String>,
+    token: Option<String>,
     cached_credentials: Option<Credentials>,
     prompt: F,
 ) -> Option<Credentials> {
     if let Some(username) = username {
         if let Some(password) = password {
             return Some(Credentials::with_password(username, password));
+        }
+
+        if let Some(token) = token {
+            return Some(Credentials::with_token(username, token));
         }
 
         match cached_credentials {
@@ -228,6 +233,7 @@ fn get_setup(args: &[String]) -> Setup {
     const PASSWORD: &str = "password";
     const PROXY: &str = "proxy";
     const SYSTEM_CACHE: &str = "system-cache";
+    const TOKEN: &str = "token";
     const USERNAME: &str = "username";
     const VERBOSE: &str = "verbose";
     const VERSION: &str = "version";
@@ -275,6 +281,7 @@ fn get_setup(args: &[String]) -> Setup {
     .optflag("V", VERSION, "Display librespot version string.")
     .optopt("u", USERNAME, "Username used to sign in with.", "USERNAME")
     .optopt("p", PASSWORD, "Password used to sign in with.", "PASSWORD")
+    .optopt("t", TOKEN, "Authentication token to use.", "TOKEN")
     .optopt("", PROXY, "HTTP proxy to use when connecting.", "URL")
     .optopt("", AP_PORT, "Connect to an AP with a specified port. If no AP with that port is present a fallback AP will be used. Available ports are usually 80, 443 and 4070.", "PORT")
     .optflag("", DISABLE_DISCOVERY, "Disable zeroconf discovery mode.")
@@ -639,6 +646,7 @@ fn get_setup(args: &[String]) -> Setup {
         get_credentials(
             matches.opt_str(USERNAME),
             matches.opt_str(PASSWORD),
+            matches.opt_str(TOKEN),
             cached_credentials,
             password,
         )
